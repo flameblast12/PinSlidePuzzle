@@ -7,6 +7,7 @@ import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.widget.GridView;
+import android.widget.Toast;
 
 public class GestureDetectGridView extends GridView {
     private GestureDetector gDetector;
@@ -59,18 +60,18 @@ public class GestureDetectGridView extends GridView {
                         return false;
                     }
                     if (e1.getY() - e2.getY() > SWIPE_MIN_DISTANCE) {
-                       //todo Swipe UP
+                        MainActivity.moveTiles(context, MainActivity.up, position);
                     } else if (e2.getY() - e1.getY() > SWIPE_MIN_DISTANCE) {
-                        //todo Swipe DOWN
+                        MainActivity.moveTiles(context, MainActivity.down, position);
                     }
                 } else {
                     if (Math.abs(velocityX) < SWIPE_THRESHOLD_VELOCITY) {
                         return false;
                     }
                     if (e1.getX() - e2.getX() > SWIPE_MIN_DISTANCE) {
-                        //todo Swipe LEFT
+                        MainActivity.moveTiles(context, MainActivity.left, position);
                     } else if (e2.getX() - e1.getX() > SWIPE_MIN_DISTANCE) {
-                        //todo Swipe RIGHT
+                        MainActivity.moveTiles(context, MainActivity.right, position);
                     }
                 }
 
