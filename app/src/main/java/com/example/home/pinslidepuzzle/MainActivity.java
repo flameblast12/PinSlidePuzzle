@@ -151,6 +151,7 @@ public class MainActivity extends AppCompatActivity {
         destroySameColor();
 
         addNewColor();
+        addNewColor();
 
         Toast.makeText(context,"Score : " + score,Toast.LENGTH_SHORT).show();
 
