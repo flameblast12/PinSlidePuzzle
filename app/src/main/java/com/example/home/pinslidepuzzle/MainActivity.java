@@ -4,8 +4,14 @@ package com.example.home.pinslidepuzzle;
 import android.content.Context;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.MotionEvent;
+import android.view.View;
 import android.view.ViewTreeObserver;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -25,14 +31,21 @@ public class MainActivity extends AppCompatActivity {
     public static final String left = "left";
     public static final String right = "right";
 
+    private static boolean gameinit = true;
 
+    private static int score = 0;
 
     private static String[][] tileList;
+
+    private static Animation fadein;
+    private static Animation fadeout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        fadein  = AnimationUtils.loadAnimation(this, R.anim.fadein);
+        fadeout  = AnimationUtils.loadAnimation(this, R.anim.fadeout);
 
         init();
 
@@ -49,10 +62,6 @@ public class MainActivity extends AppCompatActivity {
             tileList[i][0] = String.valueOf(i);
             tileList[i][1] = String.valueOf(0);
         }
-        tileList[7][1] = String.valueOf(random.nextInt(4)+1);
-        tileList[11][1] = String.valueOf(random.nextInt(4)+1);
-        tileList[13][1] = String.valueOf(random.nextInt(4)+1);
-        tileList[17][1] = String.valueOf(random.nextInt(4)+1);
     }
 
 
@@ -89,31 +98,46 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private static void display(Context context) {
+        if(gameinit == true){
+            tileList[7][1] = String.valueOf(1);
+            tileList[11][1] = String.valueOf(2);
+            tileList[13][1] = String.valueOf(3);
+            tileList[17][1] = String.valueOf(4);
+            gameinit = false;
+        }
         ArrayList<Button> buttons = new ArrayList<>();
         Button button;
 
         for (int i = 0; i < tileList.length; i++) {
             button = new Button(context);
-
+            button.setBackgroundResource(R.drawable.blanktile);
             for(int j = 0; j<DIMENSIONS; j++){
-                if(tileList[i][0].equals(Integer.toString(j))){
+                if(tileList[i][0].equals(String.valueOf(j))){
                     if(tileList[i][1] == String.valueOf(1)){
+                        button.setText("1");
+                        //button.startAnimation(fadein);
                         button.setBackgroundResource(R.drawable.redtile);
                     }else if(tileList[i][1] == String.valueOf(2)){
+                        button.setText("2");
+                       // button.startAnimation(fadein);
                         button.setBackgroundResource(R.drawable.bluetile);
                     }else if(tileList[i][1] ==String.valueOf(3)){
+                        button.setText("3");
+                       // button.startAnimation(fadein);
                         button.setBackgroundResource(R.drawable.greentile);
                     }else if(tileList[i][1] ==String.valueOf(4)){
+                        button.setText("4");
+                      //  button.startAnimation(fadein);
                         button.setBackgroundResource(R.drawable.yellowtile);
                     }else{
                         button.setBackgroundResource(R.drawable.blanktile);
                     }
                 }
-            }
 
+            }
+            Log.v("", tileList[i][0]+" "+tileList[i][1]);
             buttons.add(button);
         }
-
         mGridView.setAdapter(new CustomAdapter(buttons, mColumnWidth, mColumnHeight));
     }
 
@@ -121,7 +145,6 @@ public class MainActivity extends AppCompatActivity {
         String newColor = tileList[currentPosition + swap][1];
         tileList[currentPosition + swap][1] = tileList[currentPosition][1];
         tileList[currentPosition][1] = newColor;
-
     }
 
     private static void checkeverymove(Context context){
@@ -129,9 +152,11 @@ public class MainActivity extends AppCompatActivity {
 
         addNewColor();
 
+        Toast.makeText(context,"Score : " + score,Toast.LENGTH_SHORT).show();
+
         display(context);
 
-        if (isSolved()) Toast.makeText(context, "GAME OVER!", Toast.LENGTH_SHORT).show();
+        if (isSolved()) Toast.makeText(context, "GAME OVER! Your Score:" + score, Toast.LENGTH_LONG).show();
     }
 
     private static void moveAll(Context context, String Direction, int pin){
@@ -202,26 +227,33 @@ public class MainActivity extends AppCompatActivity {
         if(!isSolved()) {
             if (tileList[nextPlace][1] != String.valueOf(0)) {
                 addNewColor();
+                destroySameColor();
             } else {
                 tileList[nextPlace][1] = String.valueOf(nextColor);
+                destroySameColor();
             }
         }
     }
 
     private static void destroySameColor() {
-        for(int i =0; i < DIMENSIONS; i++){
+        for(int i =0; i < tileList.length; i++){
             if(i%COLUMNS != COLUMNS-1 && i%COLUMNS != COLUMNS-2){
-                if(tileList[i][1] == tileList[i+1][1] && tileList[i+1][1] == tileList[i+2][1]){
+                if(tileList[i][1]!= String.valueOf(0) && tileList[i][1] == tileList[i+1][1] && tileList[i+1][1] == tileList[i+2][1]){
                     tileList[i][1] = String.valueOf(0);
                     tileList[i+1][1] = String.valueOf(0);
                     tileList[i+2][1] = String.valueOf(0);
+                    score +=10;
                 }
-            }else if (i<15){
-                if(tileList[i][1] == tileList[i+COLUMNS][1] && tileList[i+COLUMNS][1] == tileList[i+2*COLUMNS][1]) {
-                    tileList[i][1] = String.valueOf(0);
-                    tileList[i + COLUMNS][1] = String.valueOf(0);
-                    tileList[i + 2 * COLUMNS][1] = String.valueOf(0);
+            }
+            for(int j =0; j < tileList.length; j++){
+             if (j<15){
+                if(tileList[j][1]!= String.valueOf(0) && tileList[j][1] == tileList[j+COLUMNS][1] && tileList[j+COLUMNS][1] == tileList[j+ COLUMNS + COLUMNS][1]) {
+                    tileList[j][1] = String.valueOf(0);
+                    tileList[j + COLUMNS][1] = String.valueOf(0);
+                    tileList[j + COLUMNS + COLUMNS][1] = String.valueOf(0);
+                    score +=10;
                 }
+             }
             }
         }
     }
